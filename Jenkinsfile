@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('aws-credentials')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-credentials')
+        AWS_ACCESS_KEY_ID     = credentials('AWS_Jenkins')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_Jenkins')
         AWS_DEFAULT_REGION    = 'us-east-1'
         TF_IN_AUTOMATION      = 'true'
     }
