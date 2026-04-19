@@ -1,6 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
 
 terraform{
   backend "s3" {
@@ -8,7 +5,9 @@ terraform{
     key    = "terraform.tfstate"
     region = "us-east-1"
     encrypt = true
-    use_lockfile  =true    
+    use_lockfile  =true
+
+    
   }
 }
 resource "aws_s3_bucket_versioning" "state_versioning" {
@@ -19,19 +18,22 @@ resource "aws_s3_bucket_versioning" "state_versioning" {
   }
 }
 
+provider "aws" {
+  region = "us-east-1"
+}
 
-data "aws_vpc" "default" {
-  default = true
+data "aws_vpc" "default_vpc" {
+  default = true  
 }
 
 data "aws_subnet" "default" {
-  vpc_id            = data.aws_vpc.default.id
+  vpc_id            = data.aws_vpc.default_vpc.id
   default_for_az    = true
   availability_zone = "us-east-1a"
 }
 data "aws_security_group" "default" {
   name   = "default"
-  vpc_id = data.aws_vpc.default.id
+  vpc_id = data.aws_vpc.default_vpc.id
 
 }
 resource "aws_instance" "instance2" {
@@ -45,8 +47,4 @@ resource "aws_instance" "instance2" {
   tags = {
     Name = "MyInstance"
   }
-    
-
-
-    
 }
