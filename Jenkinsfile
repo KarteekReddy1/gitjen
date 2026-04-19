@@ -1,50 +1,50 @@
 
-terraform{
-  backend "s3" {
-    bucket = "gitjen"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
-    encrypt = true
-    use_lockfile  =true
+pipeline {
+    agent any
 
-    
-  }
-}
-resource "aws_s3_bucket_versioning" "state_versioning" {
-  bucket = "gitjen"
+    environment {
+        AWS_ACCESS_KEY_ID     = credentials('AWS_Jenkins')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_Jenkins')
+        AWS_DEFAULT_REGION    = 'us-east-1'
+        TF_IN_AUTOMATION      = 'true'
+    }
 
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
-provider "aws" {
-  region = "us-east-1"
-}
+        stage('Terraform Init') {
+            steps {
+                sh 'terraform init -input=false'
+            }
+        }
 
-data "aws_vpc" "default_vpc" {
-  default = true  
-}
+        stage('Terraform Validate') {
+            steps {
+                sh 'terraform validate'
+            }
+        }
 
-data "aws_subnet" "default" {
-  vpc_id            = data.aws_vpc.default_vpc.id
-  default_for_az    = true
-  availability_zone = "us-east-1a"
-}
-data "aws_security_group" "default" {
-  name   = "default"
-  vpc_id = data.aws_vpc.default_vpc.id
+        stage('Terraform Plan') {
+            steps {
+                sh 'terraform plan -out=tfplan -input=false'
+            }
+        }
 
-}
-resource "aws_instance" "instance2" {
-  ami                    = "ami-098e39bafa7e7303d"
-  instance_type          = "t3.micro"
-  subnet_id              = data.aws_subnet.default.id
-  vpc_security_group_ids = [data.aws_security_group.default.id]
-  key_name               = "test"
+        stage('Terraform Apply') {
+            steps {
+                input message: 'Apply Terraform changes?', ok: 'Apply'
+                sh 'terraform apply -input=false tfplan'
+            }
+        }
+    }
 
-
-  tags = {
-    Name = "MyInstance"
-  }
+    post {
+        always {
+            sh 'rm -f tfplan'
+        }
+    }
 }
