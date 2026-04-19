@@ -18,7 +18,7 @@ pipeline {
 
         stage('Terraform Init') {
             steps {
-                sh 'terraform init
+                sh 'terraform init'
             }
         }
 
@@ -30,14 +30,14 @@ pipeline {
 
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan
+                sh 'terraform plan'
             }
         }
 
         stage('Terraform Apply') {
             steps {
                 input message: 'Apply Terraform changes?', ok: 'Apply'
-                sh 'terraform apply 
+                sh 'terraform apply'
             }
         }
     }
