@@ -1,13 +1,12 @@
-
-terraform{
+terraform {
   backend "s3" {
-    bucket = "gitjen"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
-    encrypt = true
-    use_lockfile  =true
+    bucket       = "gitjen"
+    key          = "terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
 
-    
+
   }
 }
 resource "aws_s3_bucket_versioning" "state_versioning" {
@@ -23,7 +22,7 @@ provider "aws" {
 }
 
 data "aws_vpc" "default" {
-  default = true  
+  default = true
 }
 
 data "aws_subnet" "default" {
