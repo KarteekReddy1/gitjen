@@ -1,30 +1,65 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         AWS_ACCESS_KEY_ID     = credentials('AWS_Jenkins')
+//         AWS_SECRET_ACCESS_KEY = credentials('AWS_Jenkins')
+//         AWS_DEFAULT_REGION    = 'us-east-1'
+//         TF_IN_AUTOMATION      = 'true'
+//     }
+
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 checkout scm
+//             }
+//         }
+
+//         stage('Terraform Init') {
+//             steps {
+//                 sh 'terraform init -migrate-state -force-copy -input=false -no-color'
+
+//             }
+//         }
+
+//         stage('Terraform Validate') {
+//             steps {
+//                 sh 'terraform validate'
+//             }
+//         }
+
+//         stage('Terraform Plan') {
+//             steps {
+//                 sh 'terraform plan'
+//             }
+//         }
+
+//         stage('Terraform Apply') {
+//             steps {
+//                 input message: 'Apply Terraform changes?', ok: 'Apply'
+//                 sh 'terraform apply -auto-approve'
+//             }
+//         }
+//     }
+
+//     post {
+//         always {
+//             sh 'rm -f tfplan'
+//         }
+//     }
+// }
 pipeline {
     agent any
 
-    environment {
-        AWS_ACCESS_KEY_ID     = credentials('AWS_Jenkins')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_Jenkins')
-        AWS_DEFAULT_REGION    = 'us-east-1'
-        TF_IN_AUTOMATION      = 'true'
-    }
-
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Terraform Init') {
             steps {
-                sh 'terraform init -migrate-state -force-copy -input=false -no-color'
-
-            }
-        }
-
-        stage('Terraform Validate') {
-            steps {
-                sh 'terraform validate'
+                withCredentials([file(credentialsId: 'jenkins-oidc-config', variable: 'OIDC_CONFIG')]) {
+                    sh '''
+                      export GOOGLE_APPLICATION_CREDENTIALS=$OIDC_CONFIG
+                      terraform init
+                    '''
+                }
             }
         }
 
@@ -36,15 +71,8 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                input message: 'Apply Terraform changes?', ok: 'Apply'
                 sh 'terraform apply -auto-approve'
             }
-        }
-    }
-
-    post {
-        always {
-            sh 'rm -f tfplan'
         }
     }
 }
