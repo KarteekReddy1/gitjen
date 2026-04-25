@@ -1,7 +1,6 @@
 provider "google" {
   region  = "us-central1"
   project = "machine-494406"
-  impersonate_service_account = "terra-jen@machine-494406.iam.gserviceaccount.com"
 
 }
 
