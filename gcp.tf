@@ -1,9 +1,6 @@
 provider "google" {
-  credentials = file("C:/Users/KKR/Downloads/GCP/jenkins-cred.json")
   project     = "machine-494406"
   region      = "us-central1"
-  impersonate_service_account = "jenkins-terraform-sa@machine-494406.iam.gserviceaccount.com"
-
 }
 
 resource "google_compute_instance" "gcp_instance" {
