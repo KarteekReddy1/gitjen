@@ -8,22 +8,21 @@ pipeline {
     }
 
     stages {
+                    
 
         stage('Authenticate to GCP') {
-            steps {
-                withCredentials([file(credentialsId: 'gcp-wif', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                    bat '''
-                    echo Authenticating with GCP...                    
-
-                    "%GCLOUD%" auth login --cred-file=%GOOGLE_APPLICATION_CREDENTIALS%
-
-                    "%GCLOUD%" config set project %PROJECT_ID%
-
-                    echo Authentication successful
-                    '''
-                }
-            }
+           steps {
+               withCredentials([file(credentialsId: 'gcp-wif', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                   bat '''
+                   echo Configuring ADC for Workload Identity Federation...
+                   :: Verify ADC by printing an access token
+                   "%GCLOUD%" auth application-default print-access-token
+                   echo Authentication setup complete.
+                   '''
         }
+    }
+}
+     
 
         // stage('Verify Access') {
         //     steps {
