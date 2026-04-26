@@ -25,14 +25,14 @@ pipeline {
             }
         }
 
-        stage('Verify Access') {
-            steps {
-                bat '''
-                echo Listing Compute Instances...
-                "%GCLOUD%" compute instances list
-                '''
-            }
-        }
+        // stage('Verify Access') {
+        //     steps {
+        //         bat '''
+        //         echo Listing Compute Instances...
+        //         "%GCLOUD%" compute instances list
+        //         '''
+        //     }
+        // }
 
         stage('Terraform Init') {
             steps {
