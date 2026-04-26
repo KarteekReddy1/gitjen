@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-wif-config')
+        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-wif')
     }
     stages {
         stage('Checkout') {
