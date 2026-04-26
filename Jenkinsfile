@@ -4,68 +4,105 @@ pipeline {
     environment {
         PROJECT_ID = "machine-494406"
         GCLOUD = "C:\\Users\\KKR\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd"
-        GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1
+        TF_IN_AUTOMATION = "true"
     }
 
     stages {
-                    
 
-        stage('Authenticate to GCP') {
-           steps {
-               withCredentials([file(credentialsId: 'gcp-wif', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                   bat '''
-                   echo Configuring ADC for Workload Identity Federation...
-                   :: Verify ADC by printing an access token
-                   "%GCLOUD%" auth application-default print-access-token
-                   echo Authentication setup complete.
-                   '''
+        stage('Authenticate and Verify GCP') {
+            steps {
+                withCredentials([file(credentialsId: 'gcp-wif', variable: 'WIF_CRED_FILE')]) {
+                    withEnv([
+                        "GOOGLE_APPLICATION_CREDENTIALS=${WIF_CRED_FILE}",
+                        "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1"
+                    ]) {
+                        bat '''
+                        echo ===== CHECK FILE =====
+                        if not exist "%GOOGLE_APPLICATION_CREDENTIALS%" (
+                          echo Credential file not found
+                          exit /b 1
+                        )
+
+                        echo ===== GCLOUD VERSION =====
+                        call "%GCLOUD%" version
+
+                        echo ===== SET PROJECT =====
+                        call "%GCLOUD%" config set project %PROJECT_ID%
+
+                        echo ===== TEST ACCESS TOKEN =====
+                        call "%GCLOUD%" auth application-default print-access-token
+                        if errorlevel 1 exit /b 1
+
+                        echo ===== LIST INSTANCES =====
+                        call "%GCLOUD%" compute instances list
+                        '''
+                    }
+                }
+            }
         }
-    }
-}
-     
-
-        // stage('Verify Access') {
-        //     steps {
-        //         bat '''
-        //         echo Listing Compute Instances...
-        //         "%GCLOUD%" compute instances list
-        //         '''
-        //     }
-        // }
 
         stage('Terraform Init') {
             steps {
-                bat '''
-                echo Initializing Terraform...
-                terraform init
-                '''
+                withCredentials([file(credentialsId: 'gcp-wif', variable: 'WIF_CRED_FILE')]) {
+                    withEnv([
+                        "GOOGLE_APPLICATION_CREDENTIALS=${WIF_CRED_FILE}",
+                        "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1"
+                    ]) {
+                        bat '''
+                        echo ===== TERRAFORM INIT =====
+                        terraform init -upgrade
+                        '''
+                    }
+                }
             }
         }
 
         stage('Terraform Validate') {
             steps {
-                bat '''
-                echo Validating Terraform...
-                terraform validate
-                '''
+                withCredentials([file(credentialsId: 'gcp-wif', variable: 'WIF_CRED_FILE')]) {
+                    withEnv([
+                        "GOOGLE_APPLICATION_CREDENTIALS=${WIF_CRED_FILE}",
+                        "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1"
+                    ]) {
+                        bat '''
+                        echo ===== TERRAFORM VALIDATE =====
+                        terraform validate
+                        '''
+                    }
+                }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                bat '''
-                echo Planning Terraform...
-                terraform plan -out=tfplan
-                '''
+                withCredentials([file(credentialsId: 'gcp-wif', variable: 'WIF_CRED_FILE')]) {
+                    withEnv([
+                        "GOOGLE_APPLICATION_CREDENTIALS=${WIF_CRED_FILE}",
+                        "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1"
+                    ]) {
+                        bat '''
+                        echo ===== TERRAFORM PLAN =====
+                        terraform plan -out=tfplan
+                        '''
+                    }
+                }
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                bat '''
-                echo Applying Terraform...
-                terraform apply -auto-approve tfplan
-                '''
+                input message: 'Apply Terraform plan?', ok: 'Apply'
+                withCredentials([file(credentialsId: 'gcp-wif', variable: 'WIF_CRED_FILE')]) {
+                    withEnv([
+                        "GOOGLE_APPLICATION_CREDENTIALS=${WIF_CRED_FILE}",
+                        "GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1"
+                    ]) {
+                        bat '''
+                        echo ===== TERRAFORM APPLY =====
+                        terraform apply -auto-approve tfplan
+                        '''
+                    }
+                }
             }
         }
     }
