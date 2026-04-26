@@ -1,6 +1,8 @@
 provider "google" {
-  region  = "us-central1"
-  project = "machine-494406"
+  credentials = file("C:/Users/KKR/Downloads/GCP/jenkins-cred.json")
+  project     = "machine-494406"
+  region      = "us-central1"
+  impersonate_service_account = "your-service-account@your-project.iam.gserviceaccount.com"
 
 }
 
