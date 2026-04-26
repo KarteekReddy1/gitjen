@@ -10,6 +10,16 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/KarteekReddy1/gitjen.git'
             }
         }
+
+
+        stage('Verify PATH') {
+            steps {
+                bat '''
+                where gcloud
+                gcloud version
+                '''
+           }
+        }
         stage('Terraform Init') {
             steps {
                 sh 'terraform init'
