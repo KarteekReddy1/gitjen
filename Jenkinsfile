@@ -4,6 +4,7 @@ pipeline {
     environment {
         PROJECT_ID = "machine-494406"
         GCLOUD = "C:\\Users\\KKR\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd"
+        GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1
     }
 
     stages {
@@ -12,9 +13,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'gcp-wif', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     bat '''
-                    set GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1
-
-                    echo Authenticating with GCP...
+                    echo Authenticating with GCP...                    
 
                     "%GCLOUD%" auth login --cred-file=%GOOGLE_APPLICATION_CREDENTIALS%
 
