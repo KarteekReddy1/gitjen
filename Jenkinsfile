@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         PROJECT_ID = "machine-494406"
-        GCLOUD = "C:\\Program Files\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd"
+        GCLOUD = "C:\\Users\\KKR\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd"
     }
 
     stages {
