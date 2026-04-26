@@ -12,6 +12,8 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'gcp-wif', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     bat '''
+                    set GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES=1
+
                     echo Authenticating with GCP...
 
                     "%GCLOUD%" auth login --cred-file=%GOOGLE_APPLICATION_CREDENTIALS%
