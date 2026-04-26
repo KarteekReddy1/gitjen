@@ -1,38 +1,49 @@
 pipeline {
     agent any
+
     environment {
-        GOOGLE_APPLICATION_CREDENTIALS = credentials('gcp-wif')
-        GOOGLE_EXTERNAL_ACCOUNT_ALLOW_EXECUTABLES = '1'
-}    
+        PROJECT_ID = "machine-494406"
+        GCLOUD = "gcloud"
+    }
+
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'master', url: 'https://github.com/KarteekReddy1/gitjen.git'
-            }
-        }
 
-
-        stage('Verify PATH') {
+        stage('Verify ADC Auth') {
             steps {
                 bat '''
-                where gcloud
-                gcloud version
+                echo ===== VERIFY ADC =====
+
+                gcloud auth application-default print-access-token
+
+                gcloud config set project %PROJECT_ID%
+
+                gcloud compute instances list
                 '''
-           }
+            }
         }
+
         stage('Terraform Init') {
             steps {
-                sh 'terraform init'
+                bat 'terraform init'
             }
         }
+
+        stage('Terraform Validate') {
+            steps {
+                bat 'terraform validate'
+            }
+        }
+
         stage('Terraform Plan') {
             steps {
-                sh 'terraform plan'
+                bat 'terraform plan -out=tfplan'
             }
         }
+
         stage('Terraform Apply') {
             steps {
-                sh 'terraform apply -auto-approve'
+                input message: 'Apply Terraform plan?', ok: 'Apply'
+                bat 'terraform apply -auto-approve tfplan'
             }
         }
     }
